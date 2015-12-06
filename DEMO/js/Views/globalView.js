@@ -40,7 +40,8 @@ app.views.GlobalView = (function() {
      * init() will be call on application start
      * you can define here any listener that do not depend
      * of dynamic DOM (in case your application view is dynamicaly 
-     * generated)
+     * generated) The default listener on DOMContentLoaded will
+     * allow the launch on other listener that do depend of dynamic DOM
      *
      */
     GlobalView.prototype.init = function() {
