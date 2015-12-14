@@ -5,9 +5,10 @@ app.views.GlobalView = (function() {
         Observable.call(this);
         this.name = name;
         this.prevent = 'not-prevented',
-        this.model = {
-            [model.name]: model
-        };
+        this.required = 'please complete the mandatory field(s)!',
+            this.model = {
+                [model.name]: model
+            };
         this.init();
     };
     /*
@@ -77,7 +78,7 @@ app.views.GlobalView = (function() {
         obj.type = obj.type || 'document';
         if (obj.type === 'class' || obj.type === 'tag') {
             var elemsL = obj.elem.length;
-            for (var i = 0; i < elemsL; i++) {
+            for (var i = 0 || 1;i < elemsL; i++) {
                 obj.elem[i].addEventListener(onEvent, function(event) {
                     this.setEvent(event, obj, onEvent);
                 }.bind(this));
@@ -110,8 +111,71 @@ app.views.GlobalView = (function() {
         if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
             event.preventDefault();
         }
-        if (event.target.id) {
+        if (onEvent === 'DOMContentLoaded') {
             var value = {};
+            this.sendNotify({
+                cmd: obj.type,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+            return false;
+        } else {
+            if (typeof(event.target.className) !== 'undefined' && event.target.className.indexOf('any') !== -1) {
+                this.anyEvent(event,obj,onEvent);
+            }else{
+                this.priorityEvent(event,obj,onEvent);
+            }
+        }
+        return false; // EQUIVALENT AU 'default' D'UN SWITCH CASE -> si l'event n'est pas définie correctement ne fait rien!
+    };
+
+    GlobalView.prototype.anyEvent = function(event, obj, onEvent){
+        var value = {};
+        if (event.target.id) {
+            if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
+                this.sendNotify({
+                    cmd: event.target.id,
+                    on: onEvent,
+                    val: event.keyCode,
+                    target: event.target
+                });
+            } else if (event.target.parentNode.getElementsByTagName('input')) {
+                value = this.inputHandler(event,value)
+                if (value === false){
+                    return false;
+                }
+            }
+            this.sendNotify({
+                cmd: event.target.id,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+        if (obj.type === 'class' && event.target.className !== this.prevent) {
+            this.sendNotify({
+                cmd: event.target.className,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+        if (obj.type === 'tag' && event.target.className !== this.prevent) {
+            this.sendNotify({
+                cmd: event.target.className,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+    }
+    GlobalView.prototype.priorityEvent = function(event, obj, onEvent){
+        var value = {};
+        if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
+            event.preventDefault();
+        }
+        if  (obj.type === 'id') {
             if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
                 this.sendNotify({
                     cmd: event.target.id,
@@ -121,26 +185,13 @@ app.views.GlobalView = (function() {
                 });
                 return false;
             } else if (event.target.parentNode.getElementsByTagName('input')) {
-                var values = event.target.parentNode.getElementsByTagName('input');
-                var length = values.length;
-                for (var i = 0; i < length; i++) {
-                    var key = values[i].id || values[i].name;
-                    if (((values[i].type === 'checkbox' || values[i].type === 'radio') && values[i].checked) 
-                        || (values[i].type !== 'checkbox' && values[i].type !== 'radio')){
-                        value[key] = values[i].value;
-                    }
+                value = this.inputHandler(event,value)
+                if (value === false){
+                    return false;
                 }
             }
             this.sendNotify({
                 cmd: event.target.id,
-                on: onEvent,
-                val: value,
-                target: event.target
-            });
-            return false;
-        } else if (onEvent === 'DOMContentLoaded') {
-            this.sendNotify({
-                cmd: obj.type,
                 on: onEvent,
                 val: value,
                 target: event.target
@@ -163,7 +214,28 @@ app.views.GlobalView = (function() {
             });
             return false;
         }
-        return false; // EQUIVALENT AU 'default' D'UN SWITCH CASE -> si l'event n'est pas définie correctement ne fait rien!
+    };
+
+    GlobalView.prototype.inputHandler = function(event,value){
+        var values = event.target.parentNode.getElementsByTagName('input');
+        var length = values.length;
+        for (var i = 0; i < length; i++) {
+            var checkRadBool = (values[i].type === 'checkbox' || values[i].type === 'radio');
+            var requiredBool = (values[i].required && ((!checkRadBool && values[i].value !== '') || (checkRadBool && values[i].checked)));
+            if (values[i].required === false || requiredBool){
+                var key = values[i].id || values[i].name;
+                if (checkRadBool && values[i].checked){
+                    value[key] = value[key] ? value[key] : [];
+                    value[key].push(values[i].value);
+                }else if (!checkRadBool) {
+                    value[key] = values[i].value;
+                }
+            }else{
+                alert(this.required);
+                return false;
+            }
+        }
+        return value;
     };
     /*
      *
@@ -173,9 +245,9 @@ app.views.GlobalView = (function() {
      * that migth not be needed everywhere and pass them as parameters
      * when this.sendNotify() is call inside of setEvent()
      *
-     * When adding custom attribute make sure to set it like so:
+     * When adding custom attribute make sure to set it like:
      * {
-     *   customAttr : obj.customAttr || undefined, 
+     *   customAttr : obj.customAttr || undefined (or {},[],'',0,etc..), 
      * }
      * Doing so will prevent error if you do not pass the attribute
      * as it will automaticaly set the attribute to undefined if nothing
@@ -186,8 +258,8 @@ app.views.GlobalView = (function() {
         this.notify({
             cmd: obj.cmd || undefined,
             on: obj.on || undefined,
-            val: obj.val || undefined,
-            target: obj.event || undefined,
+            val: obj.val || {},
+            target: obj.target || undefined,
         });
     };
     /*
@@ -200,18 +272,31 @@ app.views.GlobalView = (function() {
         console.log(this.name + ' : event received : ' + event.cmd);
         // event.cmd will indicate the action the view need to apply
         if (event.cmd === 'hello') {
-            this.printHello(1,'hover-class');
-            this.printHello(2);
-            this.createForm(formParameters)
+            this.printTitle({num:1});
+            this.printTitle({num:1,level:2,value:'Under me you will have event to test! (but none are attached to me ;) )'});
+
+            // Even if they do have the same look the 'any' css-class will impact how an element will respond to an 
+            // event as it will tell if said element will catch all event or just one! 
+            // As of now priority order is (from left to right):
+            // id > class > tag > document
+            // by default all element work with the priority event type. 
+
+            this.printTitle({num:1, classe:'hover-class',level:3,value:'click me maybe? :D (priority event type)'});
+            this.printTitle({num:2, classe:'hover-class',level:3,value:'hover me maybe? :D (priority event type)'});
+            this.printTitle({num:1, classe:'hover-class any',level:3,value:'click me maybe? :D (all possible event type)'});
+            this.printTitle({num:2, classe:'hover-class any',level:3,value:'hover me maybe? :D (all possible event type)'});
+        }
+        if (event.cmd === 'newForm') {
+            this.createForm(event.val);
         }
         if (event.cmd === 'color') {
-            this.setColor(event.val, 2);
+            this.setColor(event.val, 1);
         }
         // in a single event.cmd it is also possible to pass several order using indexOf to 
         // retrieve them after
         if (event.cmd.split(' ').indexOf('color') !== -1) {
-            this.setColor(event.val, 2);
-            this.messItUp(2);
+            this.setColor(event.val, 1);
+            this.messItUp(1);
             // it is also possible to throw and event upon another one!!
             this.sendNotify({
                 cmd: 'h1_',
@@ -244,60 +329,77 @@ app.views.GlobalView.prototype.shuffle = function(array) {
 }
 
 app.views.GlobalView.prototype.setColor = function(color, num) {
+    console.log(num);
     document.getElementById('h1_' + num.toString()).setAttribute('style', 'color:' + color + ';');
 };
 
-app.views.GlobalView.prototype.createForm = function(arrayOfObj){
-    var length = arrayOfObj.length;
-    var form = document.createElement('form');
-    console.log(form);
-    for (var i = 0; i < length; i++){
-        var input = document.createElement('input');
-        for (attr in arrayOfObj[i]){
-            console.log(attr, arrayOfObj[i][attr]);
-            input.setAttribute(attr, arrayOfObj[i][attr]);
-        }
-        form.appendChild(input);
+app.views.GlobalView.prototype.removeElement = function(main,id){
+    var elem = document.getElementById(main + id);
+    elem.parentNode.removeChild(elem);
+
+} 
+
+app.views.GlobalView.prototype.createForm = function(obj) {
+    var forms = obj.form.body;
+    var labels = obj.form.labels;
+    if (typeof(obj.id) !== 'undefined'){
+        this.removeElement('form_',obj.id);
     }
-    document.getElementById('body').appendChild(form);
+    var length = forms.length;
+    var form = document.createElement('form');
+    var id = '';
+    var not = 0;
+    for (var i = 0; i < length; i++) {
+        if (typeof (forms[i]['appendTo']) === 'undefined'){
+            var input = document.createElement('input');
+            for (attr in forms[i]) {
+                console.log(attr, forms[i][attr]);
+                input.setAttribute(attr, forms[i][attr]);
+            }
+            if (i < length){
+                if (labels[i-not].br){
+                    form.appendChild(document.createElement('br'));
+                }
+                if(labels[i-not].val){
+                    var label = document.createElement('label');
+                    label.setAttribute('for',labels[i-not].to);
+                    label.innerHTML = labels[i-not].val; 
+                    form.appendChild(label);
+                }              
+            }
+            form.appendChild(input);
+        }else{
+            not++;
+            id = forms[i].appendTo;
+            form.setAttribute('id',forms[i].formId);
+        }
+    }
+    console.log(form);
+    document.getElementById(id).appendChild(form);
 }
 
-app.views.GlobalView.prototype.printHello = function(num, classe) {
-    classe = classe ? 'class="'+ classe + '"' : 'id="h1_' + num.toString() + '"';
+app.views.GlobalView.prototype.printTitle = function(obj) {
+    obj.num = obj.num || 1; 
+    obj.classe = obj.classe || undefined;
+    obj.level  = obj.level || 1;
+    obj.value  = obj.value || 'Hello world!';
+    var classe = obj.classe ? 'class="' + obj.classe + '"id="h' + obj.level + '_' + obj.num.toString() + '"' : 'id="h' + obj.level + '_' + obj.num.toString() + '"';
     var newElem = document.createElement('div');
     document.getElementById('div_1').appendChild(newElem);
-    newElem.innerHTML = "<h1 " + classe + ">Hello World (click me please!!!)</h1>";
+    newElem.innerHTML = '<h' + obj.level + ' ' + classe + '>' + obj.value + '</h' + obj.level + '>';
 };
 app.views.GlobalView.prototype.done = function() {
     alert("I'm done!!");
 };
 
 app.views.GlobalView.prototype.messItUp = function(num) {
-    var elem = document.getElementById('h1_' + num)
-    var mess = [
-        'Hello',
-        'World',
-        'click',
-        'me',
-        'please',
-        '!!!',
-    ];
+    var elem = document.getElementById('h1_' + num);
+    console.log(elem);
+    var mess = elem.innerHTML.split(' ');
     mess = this.shuffle(mess);
-    elem.innerHTML = mess[0] + ' ' + mess[1] + ' ' + mess[2] + ' ' + mess[3] + ' ' + mess[4] + ' ' + mess[5];
+    var endMess = mess[mess.length - 1];
+    for (var i = mess.length - 2; i >= 0; i--) {
+        endMess += ' ' + mess[i];
+    };
+    elem.innerHTML = endMess;
 };
-
-var formParameters = [{
-    name: 'bibi',
-    value: 'none',
-    type: 'text'
-},{
-    name: 'baba',
-    value: 'niop',
-    'class': 'not-prevented', 
-    type: 'checkbox'
-},{
-    value: 'send it!',
-    name: 'baba',
-    id: 'plop', 
-    type: 'button'
-}]
