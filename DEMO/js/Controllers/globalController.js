@@ -170,7 +170,7 @@ app.controllers.GlobalController = (function() {
 //////////////////////////////////////////
 
 app.controllers.GlobalController.prototype.h3ClickAction = function() {
-    var color = ['red', 'blue', 'black', 'green'];
+    var color = ['red', 'blue', 'gray', 'green'];
     var col = color[Math.floor(Math.random() * 4)];
     this.model['GlobalModel'].setColor(col);
 }

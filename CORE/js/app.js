@@ -22,7 +22,6 @@ var app = {
          * Depending of what you need
          *
          */
-        controller.addModel(formModel);
         model.attach(view);
         view.attach(controller);
 

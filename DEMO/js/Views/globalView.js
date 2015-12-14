@@ -5,7 +5,7 @@ app.views.GlobalView = (function() {
         Observable.call(this);
         this.name = name;
         this.prevent = 'not-prevented',
-        this.required = 'please complete the mandatory field(s)!',
+        this.required = 'please complete the mandatory field(s)!', // ON HOLD
             this.model = {
                 [model.name]: model
             };
@@ -68,6 +68,10 @@ app.views.GlobalView = (function() {
             elem: doc.getElementsByClassName('hover-class'),
             type: 'class'
         }, 'mouseover');
+        this.addListeners({
+            elem: doc,
+            type: 'document'
+        }, 'keypress');
     };
     /*
      *
@@ -120,28 +124,32 @@ app.views.GlobalView = (function() {
                 target: event.target
             });
             return false;
-        } else {
-            if (typeof(event.target.className) !== 'undefined' && event.target.className.indexOf('any') !== -1) {
-                this.anyEvent(event,obj,onEvent);
-            }else{
-                this.priorityEvent(event,obj,onEvent);
-            }
-        }
-        return false; // EQUIVALENT AU 'default' D'UN SWITCH CASE -> si l'event n'est pas définie correctement ne fait rien!
-    };
 
-    GlobalView.prototype.anyEvent = function(event, obj, onEvent){
-        var value = {};
-        if (event.target.id) {
-            if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
+        } else if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
                 this.sendNotify({
-                    cmd: event.target.id,
+                    cmd: 'key',
                     on: onEvent,
                     val: event.keyCode,
                     target: event.target
                 });
-            } else if (event.target.parentNode.getElementsByTagName('input')) {
-                value = this.inputHandler(event,value)
+                return false;
+        } else {
+            if (typeof(event.target.className) !== 'undefined' && event.target.className.indexOf('any') !== -1) {
+                console.log('any');
+                this.anyEvent(event,obj,onEvent);
+            }else{
+                console.log('priority');
+                this.priorityEvent(event,obj,onEvent);
+            }
+        }
+        return false;
+    };
+
+    GlobalView.prototype.anyEvent = function(event, obj, onEvent){
+        var value = {};
+        if (obj.type === 'id') {
+            if (event.target.parentNode.getElementsByTagName('input')) {
+                value = this.inputHandler(event,value);
                 if (value === false){
                     return false;
                 }
@@ -163,29 +171,28 @@ app.views.GlobalView = (function() {
         }
         if (obj.type === 'tag' && event.target.className !== this.prevent) {
             this.sendNotify({
-                cmd: event.target.className,
+                cmd: event.target.tagName,
                 on: onEvent,
                 val: value,
                 target: event.target
             });
         }
-    }
+        if (obj.type === 'document' && event.target.className !== this.prevent) {
+            this.sendNotify({
+                cmd: event.target.id || event.target.className || event.target.tagName,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+            return false;
+        }
+    };
+
     GlobalView.prototype.priorityEvent = function(event, obj, onEvent){
         var value = {};
-        if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
-            event.preventDefault();
-        }
-        if  (obj.type === 'id') {
-            if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
-                this.sendNotify({
-                    cmd: event.target.id,
-                    on: onEvent,
-                    val: event.keyCode,
-                    target: event.target
-                });
-                return false;
-            } else if (event.target.parentNode.getElementsByTagName('input')) {
-                value = this.inputHandler(event,value)
+        if  (event.target.id) {
+            if (event.target.parentNode.getElementsByTagName('input')) {
+                value = this.inputHandler(event,value);
                 if (value === false){
                     return false;
                 }
@@ -196,23 +203,27 @@ app.views.GlobalView = (function() {
                 val: value,
                 target: event.target
             });
-            return false;
-        } else if (obj.type === 'class' && event.target.className !== this.prevent) {
+        } else if (event.target.className && event.target.className !== this.prevent) {
             this.sendNotify({
                 cmd: event.target.className,
                 on: onEvent,
                 val: value,
                 target: event.target
             });
-            return false;
-        } else if (obj.type === 'tag' && event.target.className !== this.prevent) {
+        } else if (event.target.tagName && event.target.className !== this.prevent) {
             this.sendNotify({
-                cmd: event.target.className,
+                cmd: event.target.tagName,
                 on: onEvent,
                 val: value,
                 target: event.target
             });
-            return false;
+        } else if (obj.type === 'document' && event.target.className !== this.prevent) {
+            this.sendNotify({
+                cmd: event.target.id || event.target.className || event.target.tagName,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
         }
     };
 
@@ -231,7 +242,6 @@ app.views.GlobalView = (function() {
                     value[key] = values[i].value;
                 }
             }else{
-                alert(this.required);
                 return false;
             }
         }
@@ -273,7 +283,7 @@ app.views.GlobalView = (function() {
         // event.cmd will indicate the action the view need to apply
         if (event.cmd === 'hello') {
             this.printTitle({num:1});
-            this.printTitle({num:1,level:2,value:'Under me you will have event to test! (but none are attached to me ;) )'});
+            this.printTitle({num:1,level:2,value:'Under me you will have event to test!'});
 
             // Even if they do have the same look the 'any' css-class will impact how an element will respond to an 
             // event as it will tell if said element will catch all event or just one! 
@@ -281,10 +291,11 @@ app.views.GlobalView = (function() {
             // id > class > tag > document
             // by default all element work with the priority event type. 
 
-            this.printTitle({num:1, classe:'hover-class',level:3,value:'click me maybe? :D (priority event type)'});
-            this.printTitle({num:2, classe:'hover-class',level:3,value:'hover me maybe? :D (priority event type)'});
-            this.printTitle({num:1, classe:'hover-class any',level:3,value:'click me maybe? :D (all possible event type)'});
-            this.printTitle({num:2, classe:'hover-class any',level:3,value:'hover me maybe? :D (all possible event type)'});
+            this.printTitle({num:1, classe:'hover-class',level:3,value:'click me maybe? :D (priority event type with same id type (h3_))'});
+            this.printTitle({num:2, classe:'hover-class',level:3,value:'hover me maybe? :D (priority event type with same id type (h3_))'});
+            this.printTitle({num:1, classe:'hover-class',level:4,value:'hover me maybe? :D (priority event type without same id type (h4_))'});
+            this.printTitle({num:3, classe:'hover-class any',level:3,value:'click me maybe? :D (all possible event type)'});
+            this.printTitle({num:4, classe:'hover-class any',level:3,value:'hover me maybe? :D (all possible event type)'});
         }
         if (event.cmd === 'newForm') {
             this.createForm(event.val);
@@ -324,12 +335,10 @@ app.views.GlobalView = (function() {
  */
 app.views.GlobalView.prototype.shuffle = function(array) {
     for (var j, x, i = array.length; i; j = Math.floor(Math.random() * i), x = array[--i], array[i] = array[j], array[j] = x);
-    console.log(j, x, i, array.length);
     return array;
-}
+};
 
 app.views.GlobalView.prototype.setColor = function(color, num) {
-    console.log(num);
     document.getElementById('h1_' + num.toString()).setAttribute('style', 'color:' + color + ';');
 };
 
@@ -337,7 +346,7 @@ app.views.GlobalView.prototype.removeElement = function(main,id){
     var elem = document.getElementById(main + id);
     elem.parentNode.removeChild(elem);
 
-} 
+};
 
 app.views.GlobalView.prototype.createForm = function(obj) {
     var forms = obj.form.body;
@@ -376,7 +385,7 @@ app.views.GlobalView.prototype.createForm = function(obj) {
     }
     console.log(form);
     document.getElementById(id).appendChild(form);
-}
+};
 
 app.views.GlobalView.prototype.printTitle = function(obj) {
     obj.num = obj.num || 1; 
@@ -394,7 +403,6 @@ app.views.GlobalView.prototype.done = function() {
 
 app.views.GlobalView.prototype.messItUp = function(num) {
     var elem = document.getElementById('h1_' + num);
-    console.log(elem);
     var mess = elem.innerHTML.split(' ');
     mess = this.shuffle(mess);
     var endMess = mess[mess.length - 1];
