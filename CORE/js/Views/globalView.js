@@ -5,9 +5,10 @@ app.views.GlobalView = (function() {
         Observable.call(this);
         this.name = name;
         this.prevent = 'not-prevented',
-        this.model = {
-            [model.name]: model
-        };
+        this.required = 'please complete the mandatory field(s)!',
+            this.model = {
+                [model.name]: model
+            };
         this.init();
     };
     /*
@@ -37,9 +38,9 @@ app.views.GlobalView = (function() {
     };
     /*
      *
-     * init() will be call on application start
+     * init() will be call on the view creation
      * you can define here any listener that do not depend
-     * of dynamic DOM (in case your application view is dynamicaly 
+     * of dynamic DOM (in case your application is dynamicaly 
      * generated) The default listener on DOMContentLoaded will
      * allow the launch on other listener that do depend of dynamic DOM
      *
@@ -77,7 +78,7 @@ app.views.GlobalView = (function() {
         obj.type = obj.type || 'document';
         if (obj.type === 'class' || obj.type === 'tag') {
             var elemsL = obj.elem.length;
-            for (var i = 0; i < elemsL; i++) {
+            for (var i = 0 || 1;i < elemsL; i++) {
                 obj.elem[i].addEventListener(onEvent, function(event) {
                     this.setEvent(event, obj, onEvent);
                 }.bind(this));
@@ -110,8 +111,71 @@ app.views.GlobalView = (function() {
         if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
             event.preventDefault();
         }
-        if (event.target.id) {
+        if (onEvent === 'DOMContentLoaded') {
             var value = {};
+            this.sendNotify({
+                cmd: obj.type,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+            return false;
+        } else {
+            if (typeof(event.target.className) !== 'undefined' && event.target.className.indexOf('any') !== -1) {
+                this.anyEvent(event,obj,onEvent);
+            }else{
+                this.priorityEvent(event,obj,onEvent);
+            }
+        }
+        return false;
+    };
+
+    GlobalView.prototype.anyEvent = function(event, obj, onEvent){
+        var value = {};
+        if (event.target.id) {
+            if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
+                this.sendNotify({
+                    cmd: event.target.id,
+                    on: onEvent,
+                    val: event.keyCode,
+                    target: event.target
+                });
+            } else if (event.target.parentNode.getElementsByTagName('input')) {
+                value = this.inputHandler(event,value)
+                if (value === false){
+                    return false;
+                }
+            }
+            this.sendNotify({
+                cmd: event.target.id,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+        if (obj.type === 'class' && event.target.className !== this.prevent) {
+            this.sendNotify({
+                cmd: event.target.className,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+        if (obj.type === 'tag' && event.target.className !== this.prevent) {
+            this.sendNotify({
+                cmd: event.target.className,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+    }
+    GlobalView.prototype.priorityEvent = function(event, obj, onEvent){
+        var value = {};
+        if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
+            event.preventDefault();
+        }
+        if  (obj.type === 'id') {
             if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
                 this.sendNotify({
                     cmd: event.target.id,
@@ -121,26 +185,13 @@ app.views.GlobalView = (function() {
                 });
                 return false;
             } else if (event.target.parentNode.getElementsByTagName('input')) {
-                var values = event.target.parentNode.getElementsByTagName('input');
-                var length = values.length;
-                for (var i = 0; i < length; i++) {
-                    var key = values[i].id || values[i].name;
-                    if (((values[i].type === 'checkbox' || values[i].type === 'radio') && values[i].checked) 
-                        || (values[i].type !== 'checkbox' && values[i].type !== 'radio')){
-                        value[key] = values[i].value;
-                    }
+                value = this.inputHandler(event,value)
+                if (value === false){
+                    return false;
                 }
             }
             this.sendNotify({
                 cmd: event.target.id,
-                on: onEvent,
-                val: value,
-                target: event.target
-            });
-            return false;
-        } else if (onEvent === 'DOMContentLoaded') {
-            this.sendNotify({
-                cmd: obj.type,
                 on: onEvent,
                 val: value,
                 target: event.target
@@ -163,7 +214,28 @@ app.views.GlobalView = (function() {
             });
             return false;
         }
-        return false; // EQUIVALENT AU 'default' D'UN SWITCH CASE -> si l'event n'est pas définie correctement ne fait rien!
+    };
+
+    GlobalView.prototype.inputHandler = function(event,value){
+        var values = event.target.parentNode.getElementsByTagName('input');
+        var length = values.length;
+        for (var i = 0; i < length; i++) {
+            var checkRadBool = (values[i].type === 'checkbox' || values[i].type === 'radio');
+            var requiredBool = (values[i].required && ((!checkRadBool && values[i].value !== '') || (checkRadBool && values[i].checked)));
+            if (values[i].required === false || requiredBool){
+                var key = values[i].id || values[i].name;
+                if (checkRadBool && values[i].checked){
+                    value[key] = value[key] ? value[key] : [];
+                    value[key].push(values[i].value);
+                }else if (!checkRadBool) {
+                    value[key] = values[i].value;
+                }
+            }else{
+                alert(this.required);
+                return false;
+            }
+        }
+        return value;
     };
     /*
      *
@@ -173,9 +245,9 @@ app.views.GlobalView = (function() {
      * that migth not be needed everywhere and pass them as parameters
      * when this.sendNotify() is call inside of setEvent()
      *
-     * When adding custom attribute make sure to set it like so:
+     * When adding custom attribute make sure to set it like:
      * {
-     *   customAttr : obj.customAttr || undefined, 
+     *   customAttr : obj.customAttr || undefined (or {},[],'',0,etc..), 
      * }
      * Doing so will prevent error if you do not pass the attribute
      * as it will automaticaly set the attribute to undefined if nothing
@@ -186,8 +258,8 @@ app.views.GlobalView = (function() {
         this.notify({
             cmd: obj.cmd || undefined,
             on: obj.on || undefined,
-            val: obj.val || undefined,
-            target: obj.event || undefined,
+            val: obj.val || {},
+            target: obj.target || undefined,
         });
     };
     /*
@@ -201,15 +273,19 @@ app.views.GlobalView = (function() {
     };
     return GlobalView;
 }).call(this);
+
+//////////////////////////////////////////
+//////////////////////////////////////////
 /*
  *
- * Here you will be able to add your custom method that will then be called in the update function
- * the following method have only been defined for the sake of the Demo.
- * 
- * You can also add them in a separate file (wich I would personnaly recommend) so you could keep
- * the core of the MVC clean and just swap your methods files according to your needs
+ * For maintenance purpose I suggest you to add your custom methods
+ * pass this point or in another file using this syntax:
+ *
+ * app.controllers.NameOfModel.prototype.functionName = function() {};
  *
  * REMEMBER IF YOU WANT YOU CAN REDEFINE A PROTOTYPE, BUT IT WILL OVERRIDE THE PREVIOUS ONE!!!
  * so make sure of what you are up to before doing so!!  
  *
  */
+//////////////////////////////////////////
+//////////////////////////////////////////

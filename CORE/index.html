@@ -11,8 +11,12 @@
 
     <div id="div_1">
     </div>
+    <div id="blockId">
+    </div>
     <script src="js/app.js"></script>
     <script src="js/libs/observable.js"></script>
+    <!-- The order of the later script does not mater as long as they are defined AFTER app.js
+    followed by observable.js -->
     <script src="js/controllers/globalController.js"></script>
     <script src="js/views/globalView.js"></script>
     <script src="js/models/globalModel.js"></script>
