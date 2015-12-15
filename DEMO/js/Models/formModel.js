@@ -168,6 +168,47 @@ app.models.FormModel.prototype.template = {
             }
         ]
     },
+    'selectForm': {
+        labels: [{
+           val: 'Country : ',
+           to: 'county',
+           br: true
+        }],
+        body: [{
+            appendTo: 'blockId',
+            formId: 'form_4'
+            }, {
+            name: 'country',
+            placeholder: 'none',
+            required: 'true',
+            type: 'select'
+            }, {
+            value: '',
+            required: 'true',
+            type: 'option'
+            }, {
+            value: 'England',
+            required: 'true',
+            type: 'option'
+            }, {
+            value: 'France',
+            required: 'true',
+            type: 'option'
+            }, {
+            value: 'Russia',
+            required: 'true',
+            type: 'option'
+            }, {
+            value: 'USA',
+            required: 'true',
+            type: 'option'
+            }, {
+            value: 'send it!',
+            id: 'textForm_4',
+            type: 'button'
+            }
+        ]
+    },
 };
 
 app.models.FormModel.prototype.setForm = function(formName,id) {

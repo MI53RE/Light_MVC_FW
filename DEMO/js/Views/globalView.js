@@ -39,9 +39,9 @@ app.views.GlobalView = (function() {
     };
     /*
      *
-     * init() will be call on application start
+     * init() will be call on the view creation
      * you can define here any listener that do not depend
-     * of dynamic DOM (in case your application view is dynamicaly 
+     * of dynamic DOM (in case your application is dynamicaly 
      * generated) The default listener on DOMContentLoaded will
      * allow the launch on other listener that do depend of dynamic DOM
      *
@@ -63,12 +63,8 @@ app.views.GlobalView = (function() {
         var doc = document;
         this.addListeners({
             elem: doc,
-            type: 'document'
+            type: 'id'
         }, 'click');
-        this.addListeners({
-            elem: doc,
-            type: 'key',
-        }, 'keypress');
         this.addListeners({
             elem: doc.getElementsByClassName('hover-class'),
             type: 'class'
@@ -94,6 +90,11 @@ app.views.GlobalView = (function() {
             }.bind(this));
         }
     };
+    /*
+     *
+     * preventDefault() will check if event must be prevented or not
+     *
+     */
     GlobalView.prototype.preventDefault = function(event, obj) {
         obj.prevent = obj.prevent || false;
         var tltnp = this.listToNotPrevent.indexOf(obj.type);
@@ -166,7 +167,7 @@ app.views.GlobalView = (function() {
         var value = {};
         var toetc = typeof(event.target.className);
         if (obj.type === 'id') {
-            if (event.target.parentNode.getElementsByTagName('input')) {
+            if (event.target.parentNode.nodeName === 'FORM') {
                 value = this.inputHandler(event, value);
                 if (value === false) {
                     this.sendNotify({
@@ -201,7 +202,7 @@ app.views.GlobalView = (function() {
             if (obj.type !== 'id' && obj.type !== 'document') {
                 return false;
             }
-            if (event.target.parentNode.getElementsByTagName('input')) {
+            if (event.target.parentNode.nodeName === 'FORM') {
                 value = this.inputHandler(event, value);
                 if (value === false) {
                     this.sendNotify({
@@ -264,20 +265,39 @@ app.views.GlobalView = (function() {
                 break;
         }
     }
-
+  
     GlobalView.prototype.inputHandler = function(event, value) {
-        var values = event.target.parentNode.getElementsByTagName('input');
-        var length = values.length;
+        var inputValues = event.target.parentNode.getElementsByTagName('input') || [];
+        var selectValues = event.target.parentNode.getElementsByTagName('select') || [];
+        console.log(selectValues);
+        //var inputValues = inputValues.concat(selectValues);
+        var length = inputValues.length;
         for (var i = 0; i < length; i++) {
-            var checkRadBool = (values[i].type === 'checkbox' || values[i].type === 'radio');
-            var requiredBool = (values[i].required && ((!checkRadBool && values[i].value !== '') || (checkRadBool && values[i].checked)));
-            if (values[i].required === false || requiredBool) {
-                var key = values[i].id || values[i].name;
-                if (checkRadBool && values[i].checked) {
+            var checkRadBool = (inputValues[i].type === 'checkbox' || inputValues[i].type === 'radio');
+            var requiredBool = (inputValues[i].required && ((!checkRadBool && inputValues[i].value !== '') || (checkRadBool && inputValues[i].checked)));
+            if (inputValues[i].required === false || requiredBool) {
+                var key = inputValues[i].id || inputValues[i].name;
+                if (checkRadBool && inputValues[i].checked) {
                     value[key] = value[key] ? value[key] : [];
-                    value[key].push(values[i].value);
+                    value[key].push(inputValues[i].value);
                 } else if (!checkRadBool) {
-                    value[key] = values[i].value;
+                    value[key] = inputValues[i].value;
+                }
+            } else {
+                return false;
+            }
+        }
+        var selectL = selectValues.length;
+        for (var j = 0; j < selectL; j++){
+            var checkRadBool = (selectValues[j].type === 'checkbox' || selectValues[j].type === 'radio');
+            var requiredBool = (selectValues[j].required && ((!checkRadBool && selectValues[j].value !== '') || (checkRadBool && selectValues[j].checked)));
+            if (selectValues[j].required === false || requiredBool) {
+                var key = selectValues[j].id || selectValues[j].name;
+                if (checkRadBool && selectValues[j].checked) {
+                    value[key] = value[key] ? value[key] : [];
+                    value[key].push(selectValues[j].value);
+                } else if (!checkRadBool) {
+                    value[key] = selectValues[j].value;
                 }
             } else {
                 return false;
@@ -298,7 +318,7 @@ app.views.GlobalView = (function() {
      *   customAttr : obj.customAttr || undefined (or {},[],'',0,etc..), 
      * }
      * Doing so will prevent error if you do not pass the attribute
-     * as it will automaticaly set the attribute to undefined if nothing
+     * as it will automaticaly set the attribute to a default value if nothing
      * is provided
      * 
      */
@@ -418,27 +438,34 @@ app.views.GlobalView.prototype.createForm = function(obj) {
     }
     var length = forms.length;
     var form = document.createElement('form');
+    var select;
     var id = '';
     var not = 0;
     for (var i = 0; i < length; i++) {
         if (typeof(forms[i]['appendTo']) === 'undefined') {
-            var input = document.createElement('input');
-            for (attr in forms[i]) {
-                console.log(attr, forms[i][attr]);
-                input.setAttribute(attr, forms[i][attr]);
+            if(forms[i]['type'] === 'select' || forms[i]['type'] === 'option' ){
+                var input = this.setSelect(forms[i]);
+            }else{
+                var input = document.createElement('input');
+                for (attr in forms[i]) {
+                    console.log(attr, forms[i][attr]);
+                    input.setAttribute(attr, forms[i][attr]);
+                }
             }
-            if (i < length) {
-                if (labels[i - not].br) {
+            if (i < length && labels.length >= i) {
+                var lab = labels.length > 1 ? labels[i - not] : labels[0];
+                if (lab.br)  {
                     form.appendChild(document.createElement('br'));
                 }
-                if (labels[i - not].val) {
+                if (lab.val) {
                     var label = document.createElement('label');
-                    label.setAttribute('for', labels[i - not].to);
-                    label.innerHTML = labels[i - not].val;
+                    label.setAttribute('for', lab.to);
+                    label.innerHTML = lab.val;
                     form.appendChild(label);
                 }
             }
             form.appendChild(input);
+            
         } else {
             not++;
             id = forms[i].appendTo;
@@ -449,6 +476,20 @@ app.views.GlobalView.prototype.createForm = function(obj) {
     document.getElementById(id).appendChild(form);
 };
 
+app.views.GlobalView.prototype.setSelect = function(formObj){
+    if (formObj['type'] === 'select'){
+        select = document.createElement('select');
+        for (attr in formObj) {
+            console.log(attr, formObj[attr]);
+            select.setAttribute(attr, formObj[attr]);;
+        }
+    }else{
+        var option = document.createElement('option');
+        option.innerHTML = formObj.value
+        select.appendChild(option);
+    }
+    return select;
+};
 app.views.GlobalView.prototype.printTitle = function(obj) {
     obj.num = obj.num || 1;
     obj.classe = obj.classe || undefined;

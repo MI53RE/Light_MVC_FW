@@ -187,6 +187,9 @@ app.controllers.GlobalController.prototype.textFormClickAction = function(val){
         case "2":
             this.model['FormModel'].setForm('radioForm',val.id[0]);
             break;
+        case "3":
+            this.model['FormModel'].setForm('selectForm',val.id[0]);
+            break;
         default:
             break;
     }

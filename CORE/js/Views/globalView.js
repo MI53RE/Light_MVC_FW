@@ -90,6 +90,11 @@ app.views.GlobalView = (function() {
             }.bind(this));
         }
     };
+    /*
+     *
+     * preventDefault() will check if event must be prevented or not
+     *
+     */
     GlobalView.prototype.preventDefault = function(event, obj) {
         obj.prevent = obj.prevent || false;
         var tltnp = this.listToNotPrevent.indexOf(obj.type);
@@ -118,7 +123,6 @@ app.views.GlobalView = (function() {
      * keep their default behaviour
      *
      */
-   */
     GlobalView.prototype.setEvent = function(event, obj, onEvent) {
                 this.preventDefault(event, obj);
         if (onEvent === 'DOMContentLoaded') {
@@ -163,7 +167,7 @@ app.views.GlobalView = (function() {
         var value = {};
         var toetc = typeof(event.target.className);
         if (obj.type === 'id') {
-            if (event.target.parentNode.getElementsByTagName('input')) {
+            if (event.target.parentNode.nodeName === 'FORM') {
                 value = this.inputHandler(event, value);
                 if (value === false) {
                     this.sendNotify({
@@ -198,7 +202,7 @@ app.views.GlobalView = (function() {
             if (obj.type !== 'id' && obj.type !== 'document') {
                 return false;
             }
-            if (event.target.parentNode.getElementsByTagName('input')) {
+            if (event.target.parentNode.nodeName === 'FORM') {
                 value = this.inputHandler(event, value);
                 if (value === false) {
                     this.sendNotify({
@@ -261,20 +265,39 @@ app.views.GlobalView = (function() {
                 break;
         }
     }
-
+  
     GlobalView.prototype.inputHandler = function(event, value) {
-        var values = event.target.parentNode.getElementsByTagName('input');
-        var length = values.length;
+        var inputValues = event.target.parentNode.getElementsByTagName('input') || [];
+        var selectValues = event.target.parentNode.getElementsByTagName('select') || [];
+        console.log(selectValues);
+        //var inputValues = inputValues.concat(selectValues);
+        var length = inputValues.length;
         for (var i = 0; i < length; i++) {
-            var checkRadBool = (values[i].type === 'checkbox' || values[i].type === 'radio');
-            var requiredBool = (values[i].required && ((!checkRadBool && values[i].value !== '') || (checkRadBool && values[i].checked)));
-            if (values[i].required === false || requiredBool) {
-                var key = values[i].id || values[i].name;
-                if (checkRadBool && values[i].checked) {
+            var checkRadBool = (inputValues[i].type === 'checkbox' || inputValues[i].type === 'radio');
+            var requiredBool = (inputValues[i].required && ((!checkRadBool && inputValues[i].value !== '') || (checkRadBool && inputValues[i].checked)));
+            if (inputValues[i].required === false || requiredBool) {
+                var key = inputValues[i].id || inputValues[i].name;
+                if (checkRadBool && inputValues[i].checked) {
                     value[key] = value[key] ? value[key] : [];
-                    value[key].push(values[i].value);
+                    value[key].push(inputValues[i].value);
                 } else if (!checkRadBool) {
-                    value[key] = values[i].value;
+                    value[key] = inputValues[i].value;
+                }
+            } else {
+                return false;
+            }
+        }
+        var selectL = selectValues.length;
+        for (var j = 0; j < selectL; j++){
+            var checkRadBool = (selectValues[j].type === 'checkbox' || selectValues[j].type === 'radio');
+            var requiredBool = (selectValues[j].required && ((!checkRadBool && selectValues[j].value !== '') || (checkRadBool && selectValues[j].checked)));
+            if (selectValues[j].required === false || requiredBool) {
+                var key = selectValues[j].id || selectValues[j].name;
+                if (checkRadBool && selectValues[j].checked) {
+                    value[key] = value[key] ? value[key] : [];
+                    value[key].push(selectValues[j].value);
+                } else if (!checkRadBool) {
+                    value[key] = selectValues[j].value;
                 }
             } else {
                 return false;
@@ -295,7 +318,7 @@ app.views.GlobalView = (function() {
      *   customAttr : obj.customAttr || undefined (or {},[],'',0,etc..), 
      * }
      * Doing so will prevent error if you do not pass the attribute
-     * as it will automaticaly set the attribute to undefined if nothing
+     * as it will automaticaly set the attribute to a default value if nothing
      * is provided
      * 
      */
