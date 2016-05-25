@@ -1,0 +1,48 @@
+.dev-console {
+	background-color: #3A3A3A;
+	color: white;
+    overflow: auto;
+	overflow-y: hidden;
+}
+
+
+/* HTML */
+
+.language-html .pre-tag {
+	color: #ED6464;
+}
+.language-html .pre-attr {
+	color: #00E335;
+}
+.language-html .pre-string {
+	color: #E8DA7B;
+}
+
+
+/* JAVASCRIPT */
+
+
+.language-javascript .pre-type {
+	color: #6ED3F5;
+}
+.language-javascript .pre-class {
+	color: #6ED3F5;
+}
+.language-javascript .pre-funct {
+	color: #00E335;
+}
+.language-javascript .pre-arg {
+	color: orange;
+}
+.language-javascript .pre-string {
+	color: #E8DA7B;
+}
+.language-javascript .pre-num {
+	color: #C393CF;
+}
+.language-javascript .pre-ctx {
+	color: orange;
+}
+.language-javascript .pre-key-word {
+	color: #ED6464;
+}

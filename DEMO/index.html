@@ -3,21 +3,445 @@
 
 <head>
     <meta charset="UTF-8">
-    <title></title>
-    <link rel="stylesheet" type="text/css" href="css/css.css">
+    <title>LMVCFMK DEMO</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/syntax-highlighter.css">
 </head>
 
 <body id="body">
+    <h1 id="h1_1">Light MVC FrameWork: DEMO</h1>
+    <div>
+        <h2 id="h2_1">You can test different combinations in the following tables</h2>
+        <h3>We use the following events listeners to catch event on this whole page</h3>
+        <h4>javascript</h4>
+        <pre class="dev-console">
+        <code class="language-javascript" data-target-id="example-js-a" id="example-js-a">
+        app.views.GlobalView.prototype.activateListeners = function() {
+            this.addListeners({
+                'id': this.getElementsByIds('click-TEST-id_1-test2', 'click-id_2', 'click-id_3'),
+                'class': this.getElementsByClassName('click-class'),
+                'tag': this.getElementsByTagName('a') 0 0 01 256
+            }, 'click');
+            this.addListeners({
+                'id': this.getElementsByIds('hover-id_1', 'hover-id_2', 'hover-id_3'),
+                'class': this.getElementsByClassName('hover-class'),
+                'tag': this.getElementsByTagName('a')
+            }, 'mouseover');
+        };
 
-    <div id="div_1">
+
+        SyntaxHighlighterModel.prototype.setHtmlExamples = function() {
+            var devHtml = document.getElementsByClassName("language-html");
+            var devHtmlL = devHtml.length;
+            for (var i = 0; i < devHtmlL; i++) {
+                var result = document.getElementById(devHtml[i].dataset.targetId).innerHTML.replace(/(<)(\/*)([a-z]*\s*?)([^]*?)(>)/gi, this.setHtmlHighlighter);
+                devHtml[i].innerHTML = result;
+            }
+        }
+
+
+
+    SyntaxHighlighterModel.prototype.setJavascriptHighlighter = function(match, p1, p2, p3, p4, p5, p6, offset, string) {
+        var code = '';
+            console.log('"' + p1 + '"', '"' + p2 + '"', '"' + p3 + '"', '"' + p4 + '"', '"' + p5 + '"', this.hasChild);
+        if (p1.charAt(0) === '\'' || p1.charAt(0) === '\"') {
+            p1 = '< span class="pre-string" >' + p1 + '</ span>';
+        } else if(p1 === 'this' || p1 === 'self') {
+            p1 = '< span class="pre-ctx">' + p1 + '</ span>';
+        } else if (this.type.indexOf(p1) !== -1) {
+            p1 = '< span class="pre-type">' + p1 + '</ span>';
+        } else if (this.keyWord.indexOf(p1) !== -1) {
+            p1 = '< span class="pre-key-word">' + p1 + '</ span>';
+        } else if (p1 && p6 === '.') {
+            p1 = '< span class="pre-class">' + p1 + '</ span>';
+            this.hasChild = true;
+        } else if (p1 !== '' && this.hasChild === true && p6 === ' ') {
+            p1 = '< span class="pre-funct">' + p1 + '</ span>';
+            this.hasChild = false;
+        } else if (/^(\-|\+)?([0-9]+|Infinity)$/.test(p1)) {
+            p1 = '< span class="pre-num">' + p1 + '</ span>';
+        } else {
+            this.hasChild = false;
+        }
+        return [p1, p6].join('');
+    }
+        </code>
+        </pre>
     </div>
+    <pre hidden="true" >
+   
+    };  
+    </pre>
+
+    <!-- 
+        Even if they do have the same look the 'any' css-class will impact how an element will respond to an 
+        event as it will tell if said element will catch all event or just one! 
+        As of now priority order is (from left to right):
+        id > class > tag > document
+        by default all element work with the priority event type.
+    -->
+    <h2 id="h2_2">1: data-accept-event</h2>
+        <p>
+            <strong>data-accept-event</strong>: will allow you to tell which type of event you accept to listen on the element<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;possibles values can be any events (one ex: 'click' or several ex: 'click mouseover mouseout'),<br> 
+            &nbsp;&nbsp;&nbsp;&nbsp;'all' (will accept all type of event), or empty '' (will deny all type of event).<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;If not set then will be equal to 'all'.
+        </p>
+    <h3>Single event</h3>
+    <h4>html</h4>
+    <pre class="dev-console">
+        <code class="language-html" data-target-id="example-a">
+        </code>
+    </pre>
+    <div id="example-a">
+        <table>
+            <thead>
+                <tr>
+                    <th>HTML ELEMENT</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a data-accept-event='click'>click me</a></td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Multiple event</h3>
+    <h4>html</h4>
+    <pre class="dev-console">
+        <code class="language-html" data-target-id="example-b">
+        </code>
+    </pre>
+    <div id="example-b">
+        <table>
+            <thead>
+                <tr>
+                    <th>HTML ELEMENT</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout'>hover me</a></td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Combined event</h3>
+    <h4>html</h4>
+    <pre class="dev-console">
+        <code class="language-html" data-target-id="example-c">
+        </code>
+    </pre>
+    <div id="example-c">
+        <table>
+            <thead>
+                <tr>
+                    <th>HTML ELEMENT</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout click'>hover or click me</a></td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 id="h2_3">2: data-target-type</h2>
+        <p>
+            <strong>data-target-type</strong>: will allow you to tell which type of target event can be sent from<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;possibles values can be any those 5:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;'document', 'tag', 'class', 'id' which are the different type of event source we can catch,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;of course it is possible to set several of them<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ex: data-target-type='class id'<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;'any' is the same as data-target-type='document tag class id'<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;If not set then will be equal to 'any'.
+        </p>
+    <h3>Single type</h3>
+    <h4>html</h4>
+    <pre class="dev-console">
+        <code class="language-html" data-target-id="example-d">
+        </code>
+    </pre>
+    <div id="example-d">
+        <table>
+            <thead>
+                <tr>
+                    <th>HTML ELEMENT</th>
+                    <th>HAS ID</th>
+                    <th>HAS CLASS</th>
+                    <th>TYPE</th>
+                    <th>RESULT EXPECTED</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a data-target-type='tag'>click me</a></td>
+                    <td class="false">FALSE</td>
+                    <td class="false">FALSE</td>
+                    <td>tag</td>
+                    <td>toggle borders color</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-target-type='class' class="click-class click-class2">click me</a></td>
+                    <td class="false">FALSE</td>
+                    <td class="true">TRUE</td>
+                    <td>class</td>
+                    <td>toggle background color</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-target-type='id' id="click-id_1">click me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="false">FALSE</td>
+                    <td>id</td>
+                    <td>toggle 'hello world'</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-target-type='id' id="click-id_2" class="click-class">click me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="true">TRUE</td>
+                    <td>id</td>
+                    <td>toggle 'hello world' only</td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>HTML ELEMENT</th>
+                <th>HAS ID</th>
+                <th>HAS CLASS</th>
+                <th>TYPE</th>
+                <th>RESULT EXPECTED</th>
+                <th>RESULT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a data-accept-event='click' data-target-type='tag'>click me</a></td>
+                <td class="false">FALSE</td>
+                <td class="false">FALSE</td>
+                <td>click</td>
+                <td>toggle borders color</td>
+                <td class="result"></td>
+            </tr>
+            <tr>
+                <td><a data-accept-event='click' data-target-type='class' class="click-class click-class2">click me</a></td>
+                <td class="false">FALSE</td>
+                <td class="true">TRUE</td>
+                <td>click</td>
+                <td>toggle background color</td>
+                <td class="result"></td>
+            </tr>
+            <tr>
+                <td><a data-accept-event='click' data-target-type='id' id="click-id_1a">click me</a></td>
+                <td class="true">TRUE</td>
+                <td class="false">FALSE</td>
+                <td>click</td>
+                <td>toggle 'hello world'</td>
+                <td class="result"></td>
+            </tr>
+            <tr>
+                <td><a data-accept-event='click' data-target-type='id' id="click-id_2a" class="click-class">click me</a></td>
+                <td class="true">TRUE</td>
+                <td class="true">TRUE</td>
+                <td>click</td>
+                <td>toggle 'hello world' only</td>
+                <td class="result"></td>
+            </tr>
+            <tr>
+                <td><a data-accept-event='click' id="click-id_3a" class="click-class">click me</a></td>
+                <td class="true">TRUE</td>
+                <td class="true">TRUE</td>
+                <td>click</td>
+                <td>toggle background color,<br>border color & 'hello world'</td>
+                <td class="result"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Hover event ONLY</h3>
+    <h4>Used html (first cell of each rows)</h4>
+    <pre class="dev-console">
+        <code class="language-html" data-target-id="example-e">
+        </code>        
+    </pre>
+    <div id="example-e">
+        <table>
+            <thead>
+                <tr>
+                    <th>HTML ELEMENT</th>
+                    <th>HAS ID</th>
+                    <th>HAS CLASS</th>
+                    <th>TYPE</th>
+                    <th>RESULT EXPECTED</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout' data-target-type='tag'>hover me</a></td>
+                    <td class="false">FALSE</td>
+                    <td class="false">FALSE</td>
+                    <td>hover</td>
+                    <td>toggle borders color</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout' data-target-type='class' class="hover-class">hover me</a></td>
+                    <td class="false">FALSE</td>
+                    <td class="true">TRUE</td>
+                    <td>hover</td>
+                    <td>toggle background color</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout' data-target-type='id' id="hover-id_1">hover me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="false">FALSE</td>
+                    <td>hover</td>
+                    <td>toggle 'hello world'</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout' data-target-type='id' id="hover-id_2" class="hover-class">hover me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="true">TRUE</td>
+                    <td>hover</td>
+                    <td>toggle 'hello world' only</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout' id="hover-id_3" class="hover-class">hover me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="true">TRUE</td>
+                    <td>hover</td>
+                    <td>toggle background color,<br>border color & 'hello world'</td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Click and Hover event COMBINED</h3>
+    <h4>Used html (first cell of each rows)</h4>
+    <pre class="dev-console">
+    <code class="language-html" data-target-id="example-f"></code>
+    </pre>
+    <div id="example-f">
+        <table>
+            <thead>
+                <tr>
+                    <th>HTML ELEMENT</th>
+                    <th>HAS ID</th>
+                    <th>HAS CLASS</th>
+                    <th>TYPE</th>
+                    <th>RESULT EXPECTED</th>
+                    <th>RESULT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout click' data-target-type='tag'>hover or click me</a></td>
+                    <td class="false">FALSE</td>
+                    <td class="false">FALSE</td>
+                    <td>tag</td>
+                    <td>toggle borders color</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout click' data-target-type='class' class="click-class hover-class">hover or click me</a></td>
+                    <td class="false">FALSE</td>
+                    <td class="true">TRUE</td>
+                    <td>class</td>
+                    <td>toggle background color</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout click' data-target-type='id' id="click-hover-id_1">hover or click me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="false">FALSE</td>
+                    <td>id</td>
+                    <td>toggle 'hello world'</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout click' data-target-type='id' id="click-hover-id_2" class="click-class hover-class">hover or click me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="true">TRUE</td>
+                    <td>id</td>
+                    <td>toggle 'hello world' only</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td><a data-accept-event='mouseover mouseout click' id="click-hover-id_3" class="click-class hover-class">hover or click me</a></td>
+                    <td class="true">TRUE</td>
+                    <td class="true">TRUE</td>
+                    <td>any</td>
+                    <td>toggle background color,<br>border color & 'hello world'</td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="block-id"></div>
     <script src="js/app.js"></script>
     <script src="js/libs/observable.js"></script>
     <script src="js/controllers/globalController.js"></script>
     <script src="js/views/globalView.js"></script>
     <script src="js/models/globalModel.js"></script>
+    <script src="js/models/formModel.js"></script>
+    <script src="js/models/syntaxHighlighterModel.js"></script>
     <script type="text/javascript">
         var global = app.startGlobal();
+
+
+        /*
+        * TODO: Make proper introduction to the LMVCFMK
+        * introduce the different tools used by the API
+        * refactore current examples and present them
+        * rework syntax-highlighter (make a proper model that could be used later on other projects!!)
+        * add more examples
+        * put online!!
+        * HAVE FUN
+        * BE CRAZY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D
+        * 
+        * 
+        * 
+        * 
+        * 
+        */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 

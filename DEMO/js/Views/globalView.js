@@ -4,10 +4,13 @@ app.views.GlobalView = (function() {
     function GlobalView(name, model) {
         Observable.call(this);
         this.name = name;
+        this.any = 'any',
+        this.acceptType = 'all',
         this.prevent = 'not-prevented',
-        this.model = {
-            [model.name]: model
-        };
+        this.required = 'please complete the mandatory field(s)!',
+            this.model = {
+                [model.name]: model
+            };
         this.init();
     };
     /*
@@ -47,8 +50,7 @@ app.views.GlobalView = (function() {
     GlobalView.prototype.init = function() {
         var doc = document;
         this.addListeners({
-            elem: doc,
-            type: 'document'
+            'document': doc
         }, 'DOMContentLoaded');
     };
     /*
@@ -58,34 +60,59 @@ app.views.GlobalView = (function() {
      *
      */
     GlobalView.prototype.activateListeners = function() {
-        var doc = document;
-        this.addListeners({
-            elem: doc,
-            type: 'document'
-        }, 'click');
-        this.addListeners({
-            elem: doc.getElementsByClassName('hover-class'),
-            type: 'class'
-        }, 'mouseover');
     };
     /*
      *
      * addListeners() is the setup for your event depending of elem.type
      *
      */
+
     GlobalView.prototype.addListeners = function(obj, onEvent) {
-        obj.type = obj.type || 'document';
-        if (obj.type === 'class' || obj.type === 'tag') {
-            var elemsL = obj.elem.length;
-            for (var i = 0; i < elemsL; i++) {
-                obj.elem[i].addEventListener(onEvent, function(event) {
-                    this.setEvent(event, obj, onEvent);
-                }.bind(this));
-            }
+        obj.id = obj.id || null;
+        obj.class = obj.class || null;
+        obj.tag = obj.tag || null;
+        obj.document = obj.document || null;
+
+        if (obj.id !== null) {
+            this.setListeners(obj.id, 'id', onEvent);
+        }
+        if (obj.class !== null) {
+            this.setListeners(obj.class, 'class', onEvent);
+        }
+        if (obj.tag !== null) {
+            this.setListeners(obj.tag, 'tag', onEvent);
+        }
+        if (obj.document !== null) {
+            this.setListeners(obj.document, 'document', onEvent);
+        }
+    };
+
+    GlobalView.prototype.setListeners = function (elems, type, onEvent) {
+        if (type === 'document') {
+            elems.addEventListener(onEvent, function(event) {
+                this.setEvent(event, type, onEvent);
+            }.bind(this));      
         } else {
-            obj.elem.addEventListener(onEvent, function(event) {
-                this.setEvent(event, obj, onEvent);
-            }.bind(this));
+            console.log(type);
+            var elemsL = elems.length;
+            for (var i = 0; i < elemsL; i++) {
+                var elem = elems[i];
+                if (typeof elem === 'undefined' || elem === null) {
+                    continue;
+                }
+                if (type === 'id'){
+                    elem.addEventListener(onEvent, function(event) {
+                        this.setEvent(event, type, onEvent);
+                    }.bind(this));
+                } else {
+                    var elemL = elem.length;
+                    for (var j = 0; j < elemL; j++) {
+                        elem[j].addEventListener(onEvent, function(event) {
+                            this.setEvent(event, type, onEvent);
+                        }.bind(this));
+                    }
+                }
+            }
         }
     };
     /*
@@ -106,12 +133,69 @@ app.views.GlobalView = (function() {
      * keep their default behaviour
      *
      */
-    GlobalView.prototype.setEvent = function(event, obj, onEvent) {
+    GlobalView.prototype.setEvent = function(event, type, onEvent) {
+        console.log(type,onEvent);
         if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
             event.preventDefault();
         }
-        if (event.target.id) {
+        if (onEvent === 'DOMContentLoaded') {
             var value = {};
+            this.sendNotify({
+                cmd: type,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+            return false;
+        } else {
+            if (this.checkAcceptEventType(event, onEvent) === true) {
+                this.sendEvent(event, type, onEvent);
+            }
+        }
+        return false;
+    };
+
+    GlobalView.prototype.checkEventType = function(event, typeSource, type) {
+        var bool = (typeSource === type && event.target.className !== this.prevent);
+        console.log(bool, typeSource, type);
+        return bool;
+    }
+
+    GlobalView.prototype.checkElemType = function(event, types) {
+        types = types || 'undefined';
+        // console.log(event.target.dataset.targetType);
+        var targetType = event.target.dataset.targetType || '';
+        if (targetType === '' || targetType.indexOf(this.any) !== -1 || targetType.indexOf(types) !== -1) {
+            return true;
+        }
+        return false;
+    }
+
+    GlobalView.prototype.checkType = function(event, typeSource, type) {
+        var bool = this.checkElemType(event, type) && this.checkEventType(event, typeSource, type);
+        return bool;
+    }
+    /*
+     *
+     * Will check if event type is allowed on target (default: is true);
+     *
+     */
+    GlobalView.prototype.checkAcceptEventType = function(event, onEvent) {
+         var acceptEvent = (typeof event.target.dataset.acceptEvent === 'undefined') ? this.acceptType : event.target.dataset.acceptEvent;
+         console.log(acceptEvent, onEvent,(acceptEvent !== this.acceptType && acceptEvent.indexOf(onEvent) === -1));
+         if (acceptEvent !== this.acceptType && acceptEvent.indexOf(onEvent) === -1) {
+            return false;
+         }
+         return true;
+    }
+    /*
+     *
+     * sendEvent() will call all events of same type (eg: 'click') attached to an element 
+     *
+     */
+    GlobalView.prototype.sendEvent = function(event, type, onEvent){
+        var value = {};
+        if (this.checkType(event, type, 'id')) {
             if (onEvent === 'keydown' || onEvent === 'keypress' || onEvent === 'keyup') {
                 this.sendNotify({
                     cmd: event.target.id,
@@ -119,16 +203,10 @@ app.views.GlobalView = (function() {
                     val: event.keyCode,
                     target: event.target
                 });
-                return false;
             } else if (event.target.parentNode.getElementsByTagName('input')) {
-                var values = event.target.parentNode.getElementsByTagName('input');
-                var length = values.length;
-                for (var i = 0; i < length; i++) {
-                    var key = values[i].id || values[i].name;
-                    if (((values[i].type === 'checkbox' || values[i].type === 'radio') && values[i].checked) 
-                        || (values[i].type !== 'checkbox' && values[i].type !== 'radio')){
-                        value[key] = values[i].value;
-                    }
+                value = this.inputHandler(event,value);
+                if (value === false){
+                    return false;
                 }
             }
             this.sendNotify({
@@ -137,33 +215,53 @@ app.views.GlobalView = (function() {
                 val: value,
                 target: event.target
             });
-            return false;
-        } else if (onEvent === 'DOMContentLoaded') {
-            this.sendNotify({
-                cmd: obj.type,
-                on: onEvent,
-                val: value,
-                target: event.target
-            });
-            return false;
-        } else if (obj.type === 'class' && event.target.className !== this.prevent) {
-            this.sendNotify({
-                cmd: event.target.className,
-                on: onEvent,
-                val: value,
-                target: event.target
-            });
-            return false;
-        } else if (obj.type === 'tag' && event.target.className !== this.prevent) {
-            this.sendNotify({
-                cmd: event.target.className,
-                on: onEvent,
-                val: value,
-                target: event.target
-            });
-            return false;
         }
-        return false; // EQUIVALENT AU 'default' D'UN SWITCH CASE -> si l'event n'est pas définie correctement ne fait rien!
+        if (this.checkType(event, type, 'class')) {
+            this.sendNotify({
+                cmd: event.target.className,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+        if (this.checkType(event, type, 'tag')) {
+            this.sendNotify({
+                cmd: event.target.tagName,
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+        if (this.checkType(event, type, 'document')) {
+            this.sendNotify({
+                cmd: 'document',
+                on: onEvent,
+                val: value,
+                target: event.target
+            });
+        }
+    }
+
+    GlobalView.prototype.inputHandler = function(event,value){
+        var values = event.target.parentNode.getElementsByTagName('input');
+        var length = values.length;
+        for (var i = 0; i < length; i++) {
+            var checkRadBool = (values[i].type === 'checkbox' || values[i].type === 'radio');
+            var requiredBool = (values[i].required && ((!checkRadBool && values[i].value !== '') || (checkRadBool && values[i].checked)));
+            if (values[i].required === false || requiredBool){
+                var key = values[i].id || values[i].name;
+                if (checkRadBool && values[i].checked){
+                    value[key] = value[key] ? value[key] : [];
+                    value[key].push(values[i].value);
+                }else if (!checkRadBool) {
+                    value[key] = values[i].value;
+                }
+            }else{
+                alert(this.required);
+                return false;
+            }
+        }
+        return value;
     };
     /*
      *
@@ -173,9 +271,9 @@ app.views.GlobalView = (function() {
      * that migth not be needed everywhere and pass them as parameters
      * when this.sendNotify() is call inside of setEvent()
      *
-     * When adding custom attribute make sure to set it like so:
+     * When adding custom attribute make sure to set it like:
      * {
-     *   customAttr : obj.customAttr || undefined, 
+     *   customAttr : obj.customAttr || undefined (or {},[],'',0,etc..), 
      * }
      * Doing so will prevent error if you do not pass the attribute
      * as it will automaticaly set the attribute to undefined if nothing
@@ -186,9 +284,44 @@ app.views.GlobalView = (function() {
         this.notify({
             cmd: obj.cmd || undefined,
             on: obj.on || undefined,
-            val: obj.val || undefined,
-            target: obj.event || undefined,
+            val: obj.val || {},
+            target: obj.target || undefined,
         });
+    };
+
+    /*
+     *
+     * The 3 followings functions are here to simplify the addListeners function as the
+     * last one require array for its object parammeter (except for 'document' which only need document as value)
+     *
+     */
+
+
+    GlobalView.prototype.getElementsByIds = function() {
+        var result = [];
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            result.push(document.getElementById(arguments[i]));
+        }
+        return result;
+    };
+
+    GlobalView.prototype.getElementsByClassName = function() {
+        var result = [];
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            result.push(document.getElementsByClassName(arguments[i]));
+        }
+        return result;
+    };
+
+    GlobalView.prototype.getElementsByTagName = function() {
+        var result = [];
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            result.push(document.getElementsByTagName(arguments[i]));
+        }
+        return result;
     };
     /*
      *
@@ -199,30 +332,41 @@ app.views.GlobalView = (function() {
     GlobalView.prototype.update = function(event) {
         console.log(this.name + ' : event received : ' + event.cmd);
         // event.cmd will indicate the action the view need to apply
-        if (event.cmd === 'hello') {
-            this.printHello(1,'hover-class');
-            this.printHello(2);
-            this.createForm(formParameters)
+        if (event.cmd === 'initCompleted') {
+            this.activateListeners();
         }
+        // if (event.cmd === 'newForm') {
+        //     this.createForm(event.val);
+        // }
         if (event.cmd === 'color') {
-            this.setColor(event.val, 2);
+            this.setColor(event.val.color, event.val.target);
+        }
+        if (event.cmd === 'print') {
+            this.setText(event.val.text, event.val.target);
+        }
+        if (event.cmd === 'border-click') {
+            this.setBorderClick(event.val);
+        }
+        if (event.cmd === 'border-hover') {
+            this.setBorderHover(event.val);
         }
         // in a single event.cmd it is also possible to pass several order using indexOf to 
         // retrieve them after
-        if (event.cmd.split(' ').indexOf('color') !== -1) {
-            this.setColor(event.val, 2);
-            this.messItUp(2);
+        /*if (event.cmd.split(' ').indexOf('color') !== -1) {
+            this.setColor(event.val.color, event.val.target);
             // it is also possible to throw and event upon another one!!
             this.sendNotify({
-                cmd: 'h1_',
+                cmd: 'customEvent',
                 on: 'done'
             });
-        }
+        }*/
         if (event.cmd === 'done') {
-            this.setColor(event.val, 1);
+            this.setColor(event.val.color, event.val.target);
         }
 
     };
+
+
     return GlobalView;
 }).call(this);
 /*
@@ -237,67 +381,93 @@ app.views.GlobalView = (function() {
  * so make sure of what you are up to before doing so!!  
  *
  */
-app.views.GlobalView.prototype.shuffle = function(array) {
-    for (var j, x, i = array.length; i; j = Math.floor(Math.random() * i), x = array[--i], array[i] = array[j], array[j] = x);
-    console.log(j, x, i, array.length);
-    return array;
-}
 
-app.views.GlobalView.prototype.setColor = function(color, num) {
-    document.getElementById('h1_' + num.toString()).setAttribute('style', 'color:' + color + ';');
+
+
+app.views.GlobalView.prototype.activateListeners = function() {
+        this.addListeners({
+            'id': this.getElementsByIds('click-id_1','click-id_2','click-id_3'),
+            'class': this.getElementsByClassName('click-class'),
+            'tag': this.getElementsByTagName('a')
+        }, 'click');
+        this.addListeners({
+            'id': this.getElementsByIds('hover-id_1','hover-id_2','hover-id_3'),
+            'class': this.getElementsByClassName('hover-class'),
+            'tag': this.getElementsByTagName('a')
+        }, 'mouseover');
+        this.addListeners({
+            'id': this.getElementsByIds('hover-id_1','hover-id_2','hover-id_3'),
+            'class': this.getElementsByClassName('hover-class'),
+            'tag': this.getElementsByTagName('a')
+        }, 'mouseout');
 };
 
-app.views.GlobalView.prototype.createForm = function(arrayOfObj){
-    var length = arrayOfObj.length;
-    var form = document.createElement('form');
-    console.log(form);
-    for (var i = 0; i < length; i++){
-        var input = document.createElement('input');
-        for (attr in arrayOfObj[i]){
-            console.log(attr, arrayOfObj[i][attr]);
-            input.setAttribute(attr, arrayOfObj[i][attr]);
-        }
-        form.appendChild(input);
+app.views.GlobalView.prototype.setColor = function(color, target) {
+    target.style.backgroundColor = target.style.backgroundColor === color ? 'lightgray' : color;
+};
+
+app.views.GlobalView.prototype.setText = function(text ,target) {
+    target.innerHTML = target.innerHTML === '' ? text : '';
+};
+
+app.views.GlobalView.prototype.setBorderClick = function(target) {
+    if (typeof target === 'undefined') {
+        return false;
     }
-    document.getElementById('body').appendChild(form);
-}
-
-app.views.GlobalView.prototype.printHello = function(num, classe) {
-    classe = classe ? 'class="'+ classe + '"' : 'id="h1_' + num.toString() + '"';
-    var newElem = document.createElement('div');
-    document.getElementById('div_1').appendChild(newElem);
-    newElem.innerHTML = "<h1 " + classe + ">Hello World (click me please!!!)</h1>";
+    target.classList.toggle('tag-event-click');
 };
-app.views.GlobalView.prototype.done = function() {
-    alert("I'm done!!");
+app.views.GlobalView.prototype.setBorderHover = function(target) {
+    if (typeof target === 'undefined') {
+        return false;
+    }
+    target.classList.toggle('tag-event-hover');
 };
 
-app.views.GlobalView.prototype.messItUp = function(num) {
-    var elem = document.getElementById('h1_' + num)
-    var mess = [
-        'Hello',
-        'World',
-        'click',
-        'me',
-        'please',
-        '!!!',
-    ];
-    mess = this.shuffle(mess);
-    elem.innerHTML = mess[0] + ' ' + mess[1] + ' ' + mess[2] + ' ' + mess[3] + ' ' + mess[4] + ' ' + mess[5];
+/*app.views.GlobalView.prototype.removeElement = function(main,id){
+    var elem = document.getElementById(main + id);
+    elem.parentNode.removeChild(elem);
 };
 
-var formParameters = [{
-    name: 'bibi',
-    value: 'none',
-    type: 'text'
-},{
-    name: 'baba',
-    value: 'niop',
-    'class': 'not-prevented', 
-    type: 'checkbox'
-},{
-    value: 'send it!',
-    name: 'baba',
-    id: 'plop', 
-    type: 'button'
-}]
+app.views.GlobalView.prototype.createForm = function(obj) {
+    var doc = document;
+    var forms = obj.form.body;
+    var labels = obj.form.labels;
+    if (typeof(obj.id) !== 'undefined'){
+        console.log(document.getElementById('form_' + obj.id));
+        this.removeElement('form_',obj.id);
+    }
+    var length = forms.length;
+    var form = doc.createElement('form');
+    var id = '';
+    var not = 0;
+    for (var i = 0; i < length; i++) {
+        if (typeof (forms[i]['appendTo']) === 'undefined'){
+            var input = doc.createElement('input');
+            for (attr in forms[i]) {
+                input.setAttribute(attr, forms[i][attr]);
+            }
+            if (i < length){
+                if (labels[i-not].br){
+                    form.appendChild(doc.createElement('br'));
+                }
+                if(labels[i-not].val){
+                    var label = doc.createElement('label');
+                    label.setAttribute('for',labels[i-not].to);
+                    label.innerHTML = labels[i-not].val; 
+                    form.appendChild(label);
+                }              
+            }
+            form.appendChild(input);
+        }else{
+            not++;
+            id = forms[i].appendTo;
+            form.setAttribute('id',forms[i].formId);
+        }
+    }
+    doc.getElementById(id).appendChild(form);
+    // sometime you might need to create HTML elements dynamicaly and 
+    // attach some event on it!
+    this.addListeners({
+        'id': this.getElementsByIds(forms[length - 1].id)
+    }, 'click');
+};*/
