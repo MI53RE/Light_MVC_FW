@@ -2,7 +2,8 @@ app.libs.Observable = (function(){
 	function Observable(){
 		
 		this.observers = [];
-	}
+	};
+	
 	Observable.prototype.attach = function(obs){
 		this.observers.push(obs);
 	};
