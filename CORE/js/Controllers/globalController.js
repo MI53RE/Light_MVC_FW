@@ -122,12 +122,12 @@ app.controllers.GlobalController = (function() {
         for (var i = 0; i < cmdL; i++){
             fn.push(cmd[i] + on + 'Action');
         }
-        console.log(val);
+        //console.log(val);
         //
         //
         // You should keep 'console.log(fn);' during developpment process as it will give you
         // the right syntax for your functions name! (So you'll just have to copy/past it into your code ;-) )
-        console.log(fn);
+        console.log('list of function: ', fn);
         //
         //
         var fnL = fn.length;
@@ -149,7 +149,9 @@ app.controllers.GlobalController = (function() {
         // is mandatory as it will allow the activations of all
         // the orther listeners that MUST wait for the whole DOM to be loaded
         // leave it at the end if you need to put other call from there
-        this.view['GlobalView'].activateListeners();
+        setTimeout(function() {
+            this.model['GlobalModel'].completeInit();
+        }.bind(this),150);
     };
 
     return GlobalController;

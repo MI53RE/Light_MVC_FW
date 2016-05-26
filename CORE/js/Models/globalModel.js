@@ -17,11 +17,10 @@ app.models.GlobalModel = (function() {
 //////////////////////////////////////////
 /*
  *
- * For maintenance purpose I suggest you to add your custom methods
- * pass this point or in another file using this syntax:
+ * If you need to add method outside of this 'class' (be it past this point inside 
+ * this file or in another file), you can do so using this syntax:
  *
  * app.controllers.NameOfModel.prototype.functionName = function() {};
- *
  * 
  */
 //////////////////////////////////////////

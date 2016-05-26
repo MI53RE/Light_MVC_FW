@@ -15,26 +15,22 @@
         <h3>We use the following events listeners to catch event on this whole page</h3>
         <h4>javascript</h4>
         <pre class="dev-console">
-        <code class="language-javascript" data-target-id="example-js-a" id="example-js-a">
-        app.views.GlobalView.prototype.activateListeners = function() {
-            this.addListeners({
-                'id': this.getElementsByIds('click-TEST-id_1-test2', 'click-id_2', 'click-id_3'),
-                'class': this.getElementsByClassName('click-class'),
-                'tag': this.getElementsByTagName('a') 0 0 01 256
-            }, 'click');
-            this.addListeners({
-                'id': this.getElementsByIds('hover-id_1', 'hover-id_2', 'hover-id_3'),
-                'class': this.getElementsByClassName('hover-class'),
-                'tag': this.getElementsByTagName('a')
-            }, 'mouseover');
-        };
-        </code>
+            <code class="language-javascript" data-target-id="example-js-a" id="example-js-a">
+                app.views.GlobalView.prototype.activateListeners = function() {
+                    this.addListeners({
+                        'id': this.getElementsByIds('click-TEST-id_1-test2', 'click-id_2', 'click-id_3'),
+                        'class': this.getElementsByClassName('click-class'),
+                        'tag': this.getElementsByTagName('a') 0 0 01 256
+                    }, 'click');
+                    this.addListeners({
+                        'id': this.getElementsByIds('hover-id_1', 'hover-id_2', 'hover-id_3'),
+                        'class': this.getElementsByClassName('hover-class'),
+                        'tag': this.getElementsByTagName('a')
+                    }, 'mouseover');
+                };
+            </code>
         </pre>
     </div>
-    <pre hidden="true" >
-   
-    };  
-    </pre>
 
     <!-- 
         Even if they do have the same look the 'any' css-class will impact how an element will respond to an 
@@ -44,12 +40,12 @@
         by default all element work with the priority event type.
     -->
     <h2 id="h2_2">1: data-accept-event</h2>
-        <p>
-            <strong>data-accept-event</strong>: will allow you to tell which type of event you accept to listen on the element<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;possibles values can be any events (one ex: 'click' or several ex: 'click mouseover mouseout'),<br> 
-            &nbsp;&nbsp;&nbsp;&nbsp;'all' (will accept all type of event), or empty '' (will deny all type of event).<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;If not set then will be equal to 'all'.
-        </p>
+    <p>
+        <strong>data-accept-event</strong>: will allow you to tell which type of event you accept to listen on the element<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;possibles values can be any events (one ex: 'click' or several ex: 'click mouseover mouseout'),<br> 
+        &nbsp;&nbsp;&nbsp;&nbsp;'all' (will accept all type of event), or empty '' (will deny all type of event).<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;If not set then will be equal to 'all'.
+    </p>
     <h3>Single event</h3>
     <h4>html</h4>
     <pre class="dev-console">
@@ -120,15 +116,15 @@
     </div>
 
     <h2 id="h2_3">2: data-target-type</h2>
-        <p>
-            <strong>data-target-type</strong>: will allow you to tell which type of target event can be sent from<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;possibles values can be any those 5:<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;'document', 'tag', 'class', 'id' which are the different type of event source we can catch,<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;of course it is possible to set several of them<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ex: data-target-type='class id'<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;'any' is the same as data-target-type='document tag class id'<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;If not set then will be equal to 'any'.
-        </p>
+    <p>
+        <strong>data-target-type</strong>: will allow you to tell which type of target event can be sent from<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;possibles values can be any those 5:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;'document', 'tag', 'class', 'id' which are the different type of event source we can catch,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;of course it is possible to set several of them<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ex: data-target-type='class id'<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;'any' is the same as data-target-type='document tag class id'<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;If not set then will be equal to 'any'.
+    </p>
     <h3>Single type</h3>
     <h4>html</h4>
     <pre class="dev-console">
@@ -305,7 +301,7 @@
     <h3>Click and Hover event COMBINED</h3>
     <h4>Used html (first cell of each rows)</h4>
     <pre class="dev-console">
-    <code class="language-html" data-target-id="example-f"></code>
+        <code class="language-html" data-target-id="example-f"></code>
     </pre>
     <div id="example-f">
         <table>

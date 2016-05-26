@@ -19,7 +19,7 @@ var app = {
          * aController.addModel(someModel);
          * aController.addView(someView);
          * aView.addModel(someModel);
-         * Depending of what you need
+         * Depending of what you need else you can just use the following methods
          *
          */
         model.attach(view);
