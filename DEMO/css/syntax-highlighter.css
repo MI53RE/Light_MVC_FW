@@ -24,14 +24,20 @@
 
 .language-javascript .pre-type {
 	color: #6ED3F5;
+	font-style: italic;
 }
 .language-javascript .pre-class {
+	color: #6ED3F5;
+	font-style: italic;
+}
+.language-javascript .pre-parent {
 	color: #6ED3F5;
 }
 .language-javascript .pre-funct {
 	color: #00E335;
 }
 .language-javascript .pre-arg {
+	font-style: italic;
 	color: orange;
 }
 .language-javascript .pre-string {
@@ -42,6 +48,7 @@
 }
 .language-javascript .pre-ctx {
 	color: orange;
+	font-style: italic;
 }
 .language-javascript .pre-key-word {
 	color: #ED6464;
