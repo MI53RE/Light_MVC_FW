@@ -53,3 +53,6 @@
 .language-javascript .pre-key-word {
 	color: #ED6464;
 }
+.language-javascript .pre-comment {
+	color: grey;
+}

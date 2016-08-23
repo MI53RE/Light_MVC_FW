@@ -7,6 +7,7 @@ app.models.SyntaxHighlighterModel = (function() {
         this.name = name;
         this.hasChild = false;
         this.isParameters = false;
+        this.isComment = false;
         this.isUnicode = false;
         this.type = ['var', 'class', 'function', 'window', 'document'];
         this.keyWord = ['if', 'else', 'typeof', 'switch', 'for', 'in', 'while', 'break', 'return', 'new'];
@@ -142,20 +143,41 @@ app.models.SyntaxHighlighterModel = (function() {
         return -1;
     }
 
-    SyntaxHighlighterModel.prototype.setJavascriptHighlighter_BK = function(match, p1, p2, p3, p4, p5, p6, offset, string) {
+    SyntaxHighlighterModel.prototype.setJavascriptHighlighter_BK = function(match, p1, offset, string) {
+        var self = this;
         var matches = {};
-          //  console.log('p1:"' + p1 + '"', 'p2:"' + p2 + '"', 'p3:"' + p3 + '"', 'p4:"' + p4 + '"', 'p5:"' + p5 + '"', 'p6:"' + p6 + '"', this.hasChild);
-            for (pattern in this.patternList) {
-                // matches[pattern] = this.patternList[pattern].exec(match);
-                matches[pattern] = this.patternList[pattern].exec(p1+p2+p3);
-                if (matches[pattern] !== null) {
-                    for (var i = 0; i < matches[pattern].length; i++) {
-                        p2 = '<span class="' + this.classPatternList[pattern] + '">' + p2 + '</span>';
-                    }
-                }
-            } 
-          //  console.log(matches);
-        return [p1,p2,p3].join('');
+           // console.log('p1:"' + p1 + '"');
+           if (/.*\s*\/\*\s*.*/.test(p1)) {
+            p1 = '<span class="pre-comment">' + p1 + '</span>';
+                self.isComment = true;
+           } 
+           if (self.isComment === true && /\s*.*\*\/\s*.*/.test(p1)) {
+                p1.replace(/(\s*.*\*\/)(\s*.*)/, function(match, p1a, p2a, offset, string) {
+                    console.log('p1a:"' + p1a + '"', 'p2a:"' + p2a + '"');
+                    var finalString = [
+                        '<span class="pre-comment">' + p1a + '</span>',
+                        p2a.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, self.setJavascriptHighlighter.bind(self)),
+                        '\n'
+                        ]
+                    p1 = finalString.join('');
+                })
+                self.isComment = false;
+           } else if (/\s*(?:\/\/|\/\*)\s*.*/.test(p1) || self.isComment === true) {
+            p1 = '<span class="pre-comment">' + p1 + '</span>';
+           } else if (!(/\s*(?:\/\/|\/\*)\s*.*/.test(p1)) && self.isComment === false) {
+                p1 = p1.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, self.setJavascriptHighlighter.bind(self));
+           }
+            // for (pattern in this.patternList) {
+            //     // matches[pattern] = this.patternList[pattern].exec(match);
+            //     matches[pattern] = this.patternList[pattern].exec(p1+p2+p3);
+            //     if (matches[pattern] !== null) {
+            //         for (var i = 0; i < matches[pattern].length; i++) {
+            //             p2 = '<span class="' + this.classPatternList[pattern] + '">' + p2 + '</span>';
+            //         }
+            //     }
+            // } 
+           console.log(matches);
+         return p1;
     }
 
     SyntaxHighlighterModel.prototype.setHtmlExamples = function() {
@@ -172,8 +194,8 @@ app.models.SyntaxHighlighterModel = (function() {
         var devJavascript = document.getElementsByClassName("language-javascript");
         var devJavascriptL = devJavascript.length;
         for (var i = 0; i < devJavascriptL; i++) {
-            // var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/(\[?(\'|\")?(\w*\-?)+(\'|\")?\]?)(\W?)/gi, this.setJavascriptHighlighter.bind(this)); 
-            var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, this.setJavascriptHighlighter.bind(this));
+            var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/(.*(?:\n|\r|\r\n))/gi, this.setJavascriptHighlighter_BK.bind(this)); 
+            // var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, this.setJavascriptHighlighter.bind(this));
             devJavascript[i].innerHTML = result;
         }
     }
