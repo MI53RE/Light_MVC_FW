@@ -8,6 +8,7 @@ app.controllers.GlobalController = (function() {
         this.view = {
             [view.name]: view
         };
+        this.intervals = {};
     };
     /*
      *
@@ -20,11 +21,14 @@ app.controllers.GlobalController = (function() {
     };
     /*
      *
-     * A Controller can have as many view as you want/need
+     * Same as previous but add as many as you need in one go!
      *
      */
-    GlobalController.prototype.addView = function(view) {
-        this.view[view.name] = view;
+    GlobalController.prototype.addModels = function(...mixedModel) {
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            this.model[arguments[i].name] = arguments[i];
+        }
         return this;
     };
     /*
@@ -38,11 +42,56 @@ app.controllers.GlobalController = (function() {
     };
     /*
      *
+     * Same as previous but remove as many as you need in one go!
+     *
+     */
+    GlobalController.prototype.removeModels = function(...mixedModel) {
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            delete this.model[arguments[i].name];
+        }
+        return this;
+    };
+    /*
+     *
+     * A Controller can have as many view as you want/need
+     *
+     */
+    GlobalController.prototype.addView = function(view) {
+        this.view[view.name] = view;
+        return this;
+    };
+    /*
+     *
+     * Same as previous but add as many as you need in one go!
+     *
+     */
+    GlobalController.prototype.addViews = function(...mixedView) {
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            this.view[arguments[i].name] = arguments[i];
+        }
+        return this;
+    };
+    /*
+     *
      * And so you might need to remove them at some time
      *
      */
     GlobalController.prototype.removeView = function(view) {
         delete this.view[view.name];
+        return this;
+    };
+    /*
+     *
+     * Same as previous but remove as many as you need in one go!
+     *
+     */
+    GlobalController.prototype.removeViews = function(...mixedView) {
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            delete this.view[arguments[i].name];
+        }
         return this;
     };
     /*

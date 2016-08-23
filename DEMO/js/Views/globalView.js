@@ -22,11 +22,23 @@ app.views.GlobalView = (function() {
     GlobalView.prototype.constructor = GlobalView;
     /*
      *
-     * A view can have as many model as you want/need
+     * A View can have as many model as you want/need
      *
      */
     GlobalView.prototype.addModel = function(model) {
         this.model[model.name] = model;
+        return this;
+    };
+    /*
+     *
+     * Same as previous but add as many as you need in one go!
+     *
+     */
+    GlobalView.prototype.addModels = function(...mixedModel) {
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            this.model[arguments[i].name] = arguments[i];
+        }
         return this;
     };
     /*
@@ -36,6 +48,18 @@ app.views.GlobalView = (function() {
      */
     GlobalView.prototype.removeModel = function(model) {
         delete this.model[model.name];
+        return this;
+    };
+    /*
+     *
+     * Same as previous but remove as many as you need in one go!
+     *
+     */
+    GlobalView.prototype.removeModels = function(...mixedModel) {
+        var argsL = arguments.length;
+        for (var i = 0; i < argsL; i++) {
+            delete this.model[arguments[i].name];
+        }
         return this;
     };
     /*
