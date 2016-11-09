@@ -7,4 +7,4 @@ through event in your page(s).
 
 This framework will be fine by itself and do not requires any other library!
 
-As of now, an older version of this is used in another of my project (Huanga) and is curently updating to the current one so feel free to look at the source code to see how it can be possibly implemented (however prepare aspirin with you as it's really messy!! what you'll find in the DEMO\ folder is much cleaner!!).
+CORE is the only thing you need to use the framework, DEMO is here as a tutorial.

@@ -197,9 +197,7 @@ app.controllers.GlobalController = (function() {
     GlobalController.prototype.documentDOMContentLoadedAction = function() {
 
         //this one is for the DEMO purpose
-        var templateList = [addUserTemplate];
-        this.model['FormModel'].addTemplate(templateList);
-        this.model['FormModel'].createForm('create-user-form');
+        this.model['FormModel'].setForm('text-form');
         this.model['SyntaxHighlighterModel'].setHtmlExamples();
         this.model['SyntaxHighlighterModel'].setJavascriptExamples();
         // this last one is mandatory as it will allow the activations of all

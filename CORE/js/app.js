@@ -19,6 +19,7 @@ var app = {
          * aController.addModel(someModel);
          * aController.addView(someView);
          * aView.addModel(someModel);
+         * or if you need to add several ones use the addModels and addViews methods instead
          * Depending of what you need else you can just use the following methods
          *
          */

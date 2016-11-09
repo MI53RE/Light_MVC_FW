@@ -6,7 +6,7 @@ app.views.GlobalView = (function() {
         this.name = name;
         this.any = 'any',
         this.acceptType = 'all',
-        this.prevent = 'not-prevented',
+        this.notPrevent = 'not-prevented',
         this.required = 'please complete the mandatory field(s)!',
             this.model = {
                 [model.name]: model
@@ -158,8 +158,8 @@ app.views.GlobalView = (function() {
      *
      */
     GlobalView.prototype.setEvent = function(event, type, onEvent) {
-        console.log(type,onEvent);
-        if (typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.prevent) === -1) {
+        console.log(type,onEvent, event.target);
+        if (typeof event.target.classlist === "undefined" || !event.target.classlist.hasClass(this.notPrevent)) {// typeof(event.target.className) === 'undefined' || event.target.className.indexOf(this.notPrevent) === -1) {
             event.preventDefault();
         }
         if (onEvent === 'DOMContentLoaded') {
@@ -180,7 +180,7 @@ app.views.GlobalView = (function() {
     };
 
     GlobalView.prototype.checkEventType = function(event, typeSource, type) {
-        var bool = (typeSource === type && event.target.className !== this.prevent);
+        var bool = (typeSource === type && event.target.className !== this.notPrevent);
         console.log(bool, typeSource, type);
         return bool;
     }
@@ -266,7 +266,7 @@ app.views.GlobalView = (function() {
         }
     }
 
-    GlobalView.prototype.inputHandler = function(event,value){
+    GlobalView.prototype.inputHandler = function(event,value) {
         var values = event.target.parentNode.getElementsByTagName('input');
         var length = values.length;
         for (var i = 0; i < length; i++) {
@@ -281,12 +281,19 @@ app.views.GlobalView = (function() {
                     value[key] = values[i].value;
                 }
             }else{
-                alert(this.required);
+                this.callRequired();
                 return false;
             }
         }
         return value;
     };
+    /*
+     * callRequired is call when required field are not completed in the form
+     * feel free to redefine it to fit you need!
+     */
+    GlobalView.prototype.callRequired = function() {
+        alert(this.required);
+    }
     /*
      *
      * sendNotify() will set all its parameters to
