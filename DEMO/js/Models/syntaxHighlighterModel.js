@@ -73,8 +73,10 @@ app.models.SyntaxHighlighterModel = (function() {
 
     SyntaxHighlighterModel.prototype.setJavascriptHighlighter = function(match, p1, p2, p3, p4, p5, p6, offset, string) {
         var code = '';
-          console.log('p1:"' + p1 + '"', 'p2:"' + p2 + '"', 'p3:"' + p3 + '"'/*, 'p4:"' + p4 + '"', 'p5:"' + p5 + '"', 'p6:"' + p6 + '"'*/, this.hasChild);
-        if (p1.charAt(0) === '\'' || p1.charAt(0) === '\"') {
+          console.log('p1:"' + p1 + '"', /*'p2:"' + p2 + '"',*/ 'p3:"' + p3 + '"'/*, 'p4:"' + p4 + '"', 'p5:"' + p5 + '"', 'p6:"' + p6 + '"'*/, this.hasChild);
+        if (/\\./.test(p1)) {
+            p1 = '<span class="pre-const">' + p1 + '</span>';
+        } else if (p1.charAt(0) === '\'' || p1.charAt(0) === '\"') {
             p1 = '<span class="pre-string">' + p1 + '</span>';
         } else if (p1 === 'function' && p3 === '(') {
             p1 = '<span class="pre-type">' + p1 + '</span>';
@@ -109,7 +111,7 @@ app.models.SyntaxHighlighterModel = (function() {
         }
         if (p3 === '&' && this.isUnicode === false) {
             this.isUnicode = true;
-            console.log('SCORE: ' + p3)
+            // console.log('SCORE: ' + p3)
             p3 = '';
         } else if (this.isUnicode === true && this.findCharInUnicode(p1) !== -1) {
             var value = this.findCharInUnicode(p1);
@@ -124,7 +126,7 @@ app.models.SyntaxHighlighterModel = (function() {
 
     SyntaxHighlighterModel.prototype.findCharInUnicode = function(value) {
         var length = this.specChar.length;
-        console.log('val:',value);
+        // console.log('val:',value);
         for (var i = 0; i < length; i++) {
             if (this.specChar[i].unicode === value) {
                 return this.specChar[i].value;
@@ -153,7 +155,7 @@ app.models.SyntaxHighlighterModel = (function() {
            } 
            if (self.isComment === true && /\s*.*\*\/\s*.*/.test(p1)) {
                 p1.replace(/(\s*.*\*\/)(\s*.*)/, function(match, p1a, p2a, offset, string) {
-                    console.log('p1a:"' + p1a + '"', 'p2a:"' + p2a + '"');
+                    // console.log('p1a:"' + p1a + '"', 'p2a:"' + p2a + '"');
                     var finalString = [
                         '<span class="pre-comment">' + p1a + '</span>',
                         p2a.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, self.setJavascriptHighlighter.bind(self)),
@@ -165,7 +167,7 @@ app.models.SyntaxHighlighterModel = (function() {
            } else if (/\s*(?:\/\/|\/\*)\s*.*/.test(p1) || self.isComment === true) {
             p1 = '<span class="pre-comment">' + p1 + '</span>';
            } else if (!(/\s*(?:\/\/|\/\*)\s*.*/.test(p1)) && self.isComment === false) {
-                p1 = p1.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, self.setJavascriptHighlighter.bind(self));
+                p1 = p1.replace(/((?:(?:\\.)|\"(?:\w*\-?)+\")|(?:\\?'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, self.setJavascriptHighlighter.bind(self));
            }
             // for (pattern in this.patternList) {
             //     // matches[pattern] = this.patternList[pattern].exec(match);
@@ -176,7 +178,7 @@ app.models.SyntaxHighlighterModel = (function() {
             //         }
             //     }
             // } 
-           console.log(matches);
+           // console.log(matches);
          return p1;
     }
 
