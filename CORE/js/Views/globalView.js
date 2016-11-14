@@ -72,9 +72,8 @@ app.views.GlobalView = (function() {
      *
      */
     GlobalView.prototype.init = function() {
-        var doc = document;
         this.addListeners({
-            'document': doc
+            'document': document
         }, 'DOMContentLoaded');
     };
     /*

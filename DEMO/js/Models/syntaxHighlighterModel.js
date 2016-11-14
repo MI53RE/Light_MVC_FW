@@ -73,7 +73,7 @@ app.models.SyntaxHighlighterModel = (function() {
 
     SyntaxHighlighterModel.prototype.setJavascriptHighlighter = function(match, p1, p2, p3, p4, p5, p6, offset, string) {
         var code = '';
-          console.log('p1:"' + p1 + '"', /*'p2:"' + p2 + '"',*/ 'p3:"' + p3 + '"'/*, 'p4:"' + p4 + '"', 'p5:"' + p5 + '"', 'p6:"' + p6 + '"'*/, this.hasChild);
+      //    console.log('p1:"' + p1 + '"', /*'p2:"' + p2 + '"',*/ 'p3:"' + p3 + '"'/*, 'p4:"' + p4 + '"', 'p5:"' + p5 + '"', 'p6:"' + p6 + '"'*/, this.hasChild);
         if (/\\./.test(p1)) {
             p1 = '<span class="pre-const">' + p1 + '</span>';
         } else if (p1.charAt(0) === '\'' || p1.charAt(0) === '\"') {
@@ -145,19 +145,19 @@ app.models.SyntaxHighlighterModel = (function() {
         return -1;
     }
 
-    SyntaxHighlighterModel.prototype.setJavascriptHighlighter_BK = function(match, p1, offset, string) {
+    SyntaxHighlighterModel.prototype.setJavascriptLines = function(match, p1, offset, string) {
         var self = this;
         var matches = {};
            // console.log('p1:"' + p1 + '"');
            if (/.*\s*\/\*\s*.*/.test(p1)) {
-            p1 = '<span class="pre-comment">' + p1 + '</span>';
+            p1 = '<span class="pre-comment">' + p1 /*+ '</span>'*/;
                 self.isComment = true;
            } 
            if (self.isComment === true && /\s*.*\*\/\s*.*/.test(p1)) {
                 p1.replace(/(\s*.*\*\/)(\s*.*)/, function(match, p1a, p2a, offset, string) {
                     // console.log('p1a:"' + p1a + '"', 'p2a:"' + p2a + '"');
                     var finalString = [
-                        '<span class="pre-comment">' + p1a + '</span>',
+                       /* '<span class="pre-comment">' +*/ p1a + '</span>',
                         p2a.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, self.setJavascriptHighlighter.bind(self)),
                         '\n'
                         ]
@@ -196,7 +196,7 @@ app.models.SyntaxHighlighterModel = (function() {
         var devJavascript = document.getElementsByClassName("language-javascript");
         var devJavascriptL = devJavascript.length;
         for (var i = 0; i < devJavascriptL; i++) {
-            var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/(.*(?:\n|\r|\r\n))/gi, this.setJavascriptHighlighter_BK.bind(this)); 
+            var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/(.*(?:\n|\r|\r\n))/gi, this.setJavascriptLines.bind(this)); 
             // var result = document.getElementById(devJavascript[i].dataset.targetId).innerHTML.replace(/((?:\"(?:\w*\-?)+\")|(?:'?(?:\w*\-?)+'?)|(?:\\\w|\\\W))(\s*)([\!\-\+\=\.\(\)\{\}\[\\\]\,\;\&\<\>\^\|\$\:\*\/])?/gi, this.setJavascriptHighlighter.bind(this));
             devJavascript[i].innerHTML = result;
         }
